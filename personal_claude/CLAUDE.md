@@ -1,46 +1,156 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+This file provides guidance to Claude Code when working with this repository.
 
 ## What This Workspace Is
 
-This is a personal Claude Code workspace directory, not a traditional application codebase. It contains:
-- `.mcp.json` — MCP server configuration for this project scope
-- `.mcp-servers/chrome-devtools-mcp/` — A vendored MCP server that bridges Claude to Chrome DevTools Protocol
-- `.env` — Environment variables (OpenAI API key, model selection)
+A personal Claude Code workspace containing skills, agents, MCP servers, and automation workflows.
 
-## MCP Server Setup (chrome-devtools-mcp)
+## GitHub Repository
 
-The `.mcp.json` points to a Python venv that must be created before the MCP server works:
+**Repo:** https://github.com/WoodyChang21/Personal_Claude
+**Local path:** `C:\Users\User\Desktop\Claude\personal_claude`
+**Git root:** one level up at `C:\Users\User\Desktop\Claude\`
 
+### When to Push to GitHub
+
+Push to GitHub whenever any of the following occur:
+- A new skill is added or significantly updated (`\.claude/skills/`)
+- A new agent definition is added or changed (`agents/`)
+- A new MCP server is added or configured (`.mcp.json`, `.mcp-servers/`)
+- A new scheduled trigger is created or updated
+- Any infrastructure change that a remote agent would depend on
+
+**Push command (run from the git root):**
 ```bash
-cd .mcp-servers/chrome-devtools-mcp
-
-# Install dependencies (requires uv)
-uv sync
-
-# Or with pip (conda base environment is available)
-pip install -r requirements.txt
+cd "/c/Users/User/Desktop/Claude"
+git add .
+git commit -m "your message"
+git push
 ```
 
-The `.mcp.json` is pre-configured to use the venv Python at:
-`.mcp-servers/chrome-devtools-mcp/.venv/Scripts/python.exe`
+Always exclude `.env`, `.venv/`, `__pycache__/`, `.mcp-servers/`, and `.claude/settings.local.json` — these are in `.gitignore` and must never be committed.
 
-Chrome must be started with remote debugging on port 9222 (`CHROME_DEBUG_PORT=9222`) before connecting.
+---
 
-## chrome-devtools-mcp Development Commands
+## Skills
 
+Skills live in `.claude/skills/<skill-name>/SKILL.md`. Claude Code loads and executes them on demand.
+
+### ai-newsletter
+
+**Location:** `.claude/skills/ai-newsletter/`
+**Purpose:** Searches for the latest AI news, summarizes it, generates an HTML email newsletter, and sends it to `woodychang891121@gmail.com`.
+
+**How it works:**
+1. Runs parallel web searches for trending AI topics
+2. Summarizes 8–12 stories into plain-English headlines + why-it-matters blurbs
+3. Generates a self-contained HTML email using the template in `SKILL.md`
+4. Sends via Gmail SMTP using credentials from `.env`
+
+**Send script:**
 ```bash
-cd .mcp-servers/chrome-devtools-mcp
-
-uv run ruff format .      # Format
-uv run ruff check .       # Lint
-uv run mypy src/          # Type check
-uv run pytest             # Tests
-make check                # Run all checks
-make package              # Build .dxt extension
+python .claude/skills/ai-newsletter/scripts/send_email.py \
+  --html /tmp/ai_newsletter_YYYYMMDD.html \
+  --subject "⚡ AI Daily Digest — YYYY-MM-DD" \
+  --to woodychang891121@gmail.com
 ```
 
-## Architecture Note
+**Required `.env` keys:**
+```
+GMAIL_SENDER=woodychang891121@gmail.com
+GMAIL_APP_PASSWORD=<16-char Google app password>
+```
 
-The MCP server (`server.py`) is the sole entry point. It exposes tools over MCP protocol that Claude uses to control Chrome via the Chrome DevTools Protocol (CDP) over WebSocket on `localhost:9222`. No web server is involved — the server runs as a subprocess spawned by Claude Code.
+**Scheduled trigger:**
+- ID: `trig_019Dkp8WBdZ3ZPen7YaUb861`
+- Runs Mon–Fri at 9:00 AM America/Toronto (1:00 PM UTC)
+- Managed at: https://claude.ai/code/scheduled/trig_019Dkp8WBdZ3ZPen7YaUb861
+- Clones this GitHub repo, creates `.env` from embedded credentials, runs the skill
+
+### skill-creator
+
+**Location:** `.claude/skills/skill-creator/`
+**Purpose:** Scaffolds new skills — creates the `SKILL.md`, `scripts/`, and `evals/` structure.
+
+---
+
+## Agents
+
+Agent definitions live in `agents/<name>.md`. These are subagent personas Claude can adopt.
+
+| Agent | Purpose |
+|---|---|
+| `code-reviewer.md` | Reviews code for quality, security, and correctness |
+| `email-classifier.md` | Classifies and prioritises incoming emails |
+| `qa.md` | QA testing and bug reporting |
+| `research.md` | Deep research and summarisation |
+
+---
+
+## MCP Servers
+
+### Local MCP servers (`.mcp-servers/`)
+
+These run as subprocesses on the local machine only. Not available to remote scheduled agents.
+
+**chrome-devtools-mcp** — Bridges Claude to Chrome DevTools Protocol (CDP) on `localhost:9222`.
+
+Setup:
+```bash
+cd .mcp-servers/chrome-devtools-mcp
+uv sync   # or: pip install -r requirements.txt
+```
+
+Chrome must be launched with `--remote-debugging-port=9222` before connecting.
+
+Dev commands:
+```bash
+uv run ruff format .
+uv run ruff check .
+uv run mypy src/
+uv run pytest
+```
+
+**gmail-mcp** — Local Gmail MCP server with `send_email` capability. Configured in `.mcp.json`.
+
+### Cloud MCP connectors (claude.ai)
+
+These are available to remote scheduled agents via `mcp_connections` in trigger config.
+
+| Connector | UUID | URL | Capability |
+|---|---|---|---|
+| Gmail | `d3cfd847-88a5-4e59-9787-ad367362ac2f` | `https://gmailmcp.googleapis.com/mcp/v1` | Draft, label, search |
+
+> Note: The cloud Gmail connector can only create drafts — it cannot send. Use Gmail SMTP (`send_email.py`) for actual sending in remote agents.
+
+---
+
+## Environment Variables
+
+**Local `.env`** (never commit):
+```
+OPENAI_API_KEY=...
+OPENAI_MODEL=gpt-4o-mini
+GMAIL_SENDER=woodychang891121@gmail.com
+GMAIL_APP_PASSWORD=...
+SENDGRID_API_KEY=...
+```
+
+**`.env.example`** — committed template showing required keys without values.
+
+---
+
+## Scheduled Remote Agents
+
+Remote agents run in Anthropic's cloud (CCR). They clone this GitHub repo and cannot access local files, local MCP servers, or `.env`.
+
+| Trigger | Schedule | What it does |
+|---|---|---|
+| AI Newsletter | Mon–Fri 9am Toronto | Searches AI news, sends HTML email to woodychang891121@gmail.com |
+
+**Important for remote agents:**
+- Always clone from `https://github.com/WoodyChang21/Personal_Claude`
+- Credentials must be embedded in the trigger prompt (not sourced from `.env`)
+- Use Gmail SMTP for sending — the cloud Gmail MCP connector cannot send
+- Keep this repo up to date — remote agents pull the latest code at runtime
