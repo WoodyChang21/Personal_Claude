@@ -1,0 +1,14 @@
+# Secrets
+.env
+
+# Local environment
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+
+# Local MCP server installations
+.mcp-servers/
+
+# Machine-specific Claude settings
+.claude/settings.local.json

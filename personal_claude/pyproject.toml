@@ -1,0 +1,12 @@
+[project]
+name = "my-fastapi-service"
+version = "0.1.0"
+requires-python = ">=3.11"
+dependencies = [
+    "modal>=0.73",
+    "fastapi>=0.115",
+    "uvicorn>=0.30",
+]
+
+[project.optional-dependencies]
+dev = ["httpx", "pytest", "pytest-asyncio"]

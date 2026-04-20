@@ -1,0 +1,20 @@
+{
+  "skill_name": "ai-newsletter",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Send me today's AI newsletter",
+      "expected_output": "Searches AI news, generates a styled HTML email with at least 5 stories across multiple categories, and sends it to woodychang891121@gmail.com"
+    },
+    {
+      "id": 2,
+      "prompt": "What's new in AI this week? Run my daily digest.",
+      "expected_output": "Fetches latest news about Claude, MCP servers, LLMs, and AI agents, summarizes each with a 'why it matters' explanation, and emails the newsletter"
+    },
+    {
+      "id": 3,
+      "prompt": "I want to catch up on AI news — generate my newsletter and send it",
+      "expected_output": "Full pipeline: multi-topic search, story grouping by category, visually formatted HTML email sent to Gmail"
+    }
+  ]
+}

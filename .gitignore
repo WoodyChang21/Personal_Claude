@@ -1,0 +1,24 @@
+# Secrets
+.env
+**/.env
+
+# Python environments
+.venv/
+**/.venv/
+__pycache__/
+**/__pycache__/
+*.pyc
+*.pyo
+
+# Local MCP server installations
+**/.mcp-servers/
+
+# Machine-specific Claude settings
+**/.claude/settings.local.json
+
+# Cursor IDE
+.cursor/
+**/.cursor/
+
+# Stack dumps
+*.stackdump

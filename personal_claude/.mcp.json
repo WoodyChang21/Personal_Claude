@@ -1,0 +1,15 @@
+{
+  "mcpServers": {
+    "chrome-devtools": {
+      "command":  "C:/Users/User/Desktop/Claude/personal_claude/.mcp-servers/chrome-devtools-mcp/.venv/Scripts/python.exe",
+      "args": ["C:/Users/User/Desktop/Claude/personal_claude/.mcp-servers/chrome-devtools-mcp/server.py"],
+      "env": {
+        "CHROME_DEBUG_PORT": "9222"
+      }
+    },
+    "gmail": {
+      "command": "C:/Users/User/Desktop/Claude/personal_claude/.mcp-servers/gmail-mcp/.venv/Scripts/python.exe",
+      "args": ["C:/Users/User/Desktop/Claude/personal_claude/.mcp-servers/gmail-mcp/server.py"]
+    }
+  }
+}
