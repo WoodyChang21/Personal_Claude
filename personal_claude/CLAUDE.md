@@ -71,6 +71,42 @@ GMAIL_APP_PASSWORD=<16-char Google app password — local SMTP fallback only>
 - Managed at: https://claude.ai/code/scheduled/trig_019Dkp8WBdZ3ZPen7YaUb861
 - Clones this GitHub repo, creates `.env` from embedded credentials, runs the skill
 
+### job-hunt
+
+**Location:** `.claude/skills/job-hunt/`
+**Purpose:** Daily pipeline that searches for ML/AI new grad roles in Canada + USA, scores them against the user's resume, generates tailored resume content per role, and writes structured entries into the Notion "Job Leads" database. User reviews leads and applies manually.
+
+**How it works:**
+1. Reads `resume.pdf` and extracts skills, experience, projects, education
+2. Runs 8 parallel WebSearch queries targeting LinkedIn, Greenhouse, Lever, Workday
+3. Scores each lead (1–10), discards seniors/staff/out-of-region, keeps top 10 with score ≥ 5
+4. WebFetches each job URL, generates a tailored resume as Notion blocks
+5. Writes each lead as a Notion page + child "Tailored Resume" page via `notion_client.py`
+6. Prints a ranked summary
+
+**Notion client script:**
+```bash
+python .claude/skills/job-hunt/scripts/notion_client.py create-page \
+  --token "$NOTION_TOKEN" --db-id "$JOB_LEADS_DB_ID" --job-json /tmp/job.json
+
+python .claude/skills/job-hunt/scripts/notion_client.py append-resume \
+  --token "$NOTION_TOKEN" --page-id <page_id> --blocks-json /tmp/blocks.json
+```
+
+**Resume:** `.claude/skills/job-hunt/resume/resume.pdf` (not committed to git)
+
+**Required `.env` keys:**
+```
+NOTION_TOKEN=secret_...
+JOB_LEADS_DB_ID=<uuid>
+APPLIED_JOBS_DB_ID=<uuid>
+```
+
+**Scheduled trigger:**
+- Name: Job Hunt — Daily Weekday
+- Cron: `0 13 * * 1-5` (9am America/Toronto = 1pm UTC, Mon–Fri)
+- Clones this GitHub repo, creates `.env` from embedded credentials, runs the skill
+
 ### skill-creator
 
 **Location:** `.claude/skills/skill-creator/`

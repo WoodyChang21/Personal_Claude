@@ -22,3 +22,6 @@ __pycache__/
 
 # Stack dumps
 *.stackdump
+
+# Personal resume (keep local only — not for public repos)
+**/resume/*.pdf

@@ -1,0 +1,29 @@
+{
+  "evals": [
+    {
+      "id": "search_returns_leads",
+      "description": "Pipeline finds at least 5 ML/AI new grad leads",
+      "check": "notion entries created >= 5"
+    },
+    {
+      "id": "score_threshold",
+      "description": "All written leads have score >= 5",
+      "check": "all Match Score values >= 5"
+    },
+    {
+      "id": "tailored_resume_child",
+      "description": "Each Notion job lead has a Tailored Resume child page",
+      "check": "child page exists under each lead"
+    },
+    {
+      "id": "no_senior_roles",
+      "description": "No Senior/Staff/Principal roles in leads",
+      "check": "none of the Role values contain Senior, Staff, or Principal"
+    },
+    {
+      "id": "url_valid",
+      "description": "All Job URL fields are non-empty",
+      "check": "Job URL property is not empty for all leads"
+    }
+  ]
+}
