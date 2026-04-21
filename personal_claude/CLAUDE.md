@@ -46,25 +46,28 @@ Skills live in `.claude/skills/<skill-name>/SKILL.md`. Claude Code loads and exe
 1. Runs parallel web searches for trending AI topics
 2. Summarizes 8–12 stories into plain-English headlines + why-it-matters blurbs
 3. Generates a self-contained HTML email using the template in `SKILL.md`
-4. Sends via Gmail SMTP using credentials from `.env`
+4. Sends via Gmail API (OAuth2), falls back to Gmail SMTP
 
 **Send script:**
 ```bash
 python .claude/skills/ai-newsletter/scripts/send_email.py \
   --html /tmp/ai_newsletter_YYYYMMDD.html \
-  --subject "⚡ AI Daily Digest — YYYY-MM-DD" \
+  --subject "⚡ AI Weekly Digest — YYYY-MM-DD" \
   --to woodychang891121@gmail.com
 ```
 
 **Required `.env` keys:**
 ```
 GMAIL_SENDER=woodychang891121@gmail.com
-GMAIL_APP_PASSWORD=<16-char Google app password>
+GMAIL_CLIENT_ID=...
+GMAIL_CLIENT_SECRET=...
+GMAIL_REFRESH_TOKEN=...
+GMAIL_APP_PASSWORD=<16-char Google app password — local SMTP fallback only>
 ```
 
 **Scheduled trigger:**
 - ID: `trig_019Dkp8WBdZ3ZPen7YaUb861`
-- Runs Mon–Fri at 9:00 AM America/Toronto (1:00 PM UTC)
+- Runs every Monday at 9:00 AM America/Toronto (1:00 PM UTC)
 - Managed at: https://claude.ai/code/scheduled/trig_019Dkp8WBdZ3ZPen7YaUb861
 - Clones this GitHub repo, creates `.env` from embedded credentials, runs the skill
 
@@ -122,7 +125,7 @@ These are available to remote scheduled agents via `mcp_connections` in trigger 
 |---|---|---|---|
 | Gmail | `d3cfd847-88a5-4e59-9787-ad367362ac2f` | `https://gmailmcp.googleapis.com/mcp/v1` | Draft, label, search |
 
-> Note: The cloud Gmail connector can only create drafts — it cannot send. Use Gmail SMTP (`send_email.py`) for actual sending in remote agents.
+> Note: The cloud Gmail connector can only create drafts — it cannot send. `send_email.py` handles actual sending via Gmail API (OAuth2), which works from both local and remote CCR environments.
 
 ---
 
@@ -133,8 +136,10 @@ These are available to remote scheduled agents via `mcp_connections` in trigger 
 OPENAI_API_KEY=...
 OPENAI_MODEL=gpt-4o-mini
 GMAIL_SENDER=woodychang891121@gmail.com
+GMAIL_CLIENT_ID=...
+GMAIL_CLIENT_SECRET=...
+GMAIL_REFRESH_TOKEN=...
 GMAIL_APP_PASSWORD=...
-SENDGRID_API_KEY=...
 ```
 
 **`.env.example`** — committed template showing required keys without values.
@@ -147,10 +152,10 @@ Remote agents run in Anthropic's cloud (CCR). They clone this GitHub repo and ca
 
 | Trigger | Schedule | What it does |
 |---|---|---|
-| AI Newsletter | Mon–Fri 9am Toronto | Searches AI news, sends HTML email to woodychang891121@gmail.com |
+| AI Newsletter | Every Monday 9am Toronto | Searches AI news, sends HTML email to woodychang891121@gmail.com |
 
 **Important for remote agents:**
 - Always clone from `https://github.com/WoodyChang21/Personal_Claude`
 - Credentials must be embedded in the trigger prompt (not sourced from `.env`)
-- Use Gmail SMTP for sending — the cloud Gmail MCP connector cannot send
+- Use `send_email.py` for sending — it uses Gmail API (OAuth2), which works in CCR
 - Keep this repo up to date — remote agents pull the latest code at runtime
