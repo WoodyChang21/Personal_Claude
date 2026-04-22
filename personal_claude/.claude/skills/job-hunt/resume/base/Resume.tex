@@ -1,0 +1,147 @@
+\documentclass[10pt, letterpaper]{article}
+
+% Packages:
+\usepackage[
+    ignoreheadfoot, % set margins without considering header and footer
+    top=0.8 cm, % seperation between body and page edge from the top
+    bottom=0.8 cm, % seperation between body and page edge from the bottom
+    left=0.8 cm, % seperation between body and page edge from the left
+    right=0.8 cm, % seperation between body and page edge from the right
+    footskip=0.7 cm, % seperation between body and footer
+]{geometry} % for adjusting page geometry
+\usepackage{titlesec} % for customizing section titles
+\usepackage{tabularx} % for making tables with fixed width columns
+\usepackage{array} % tabularx requires this
+\usepackage[dvipsnames]{xcolor} % for coloring text
+\definecolor{primaryColor}{RGB}{0, 0, 0} % define primary color
+\usepackage{enumitem} % for customizing lists
+\usepackage{fontawesome5} % for using icons
+\usepackage{amsmath} % for math
+\usepackage[
+    pdftitle={Woody Chang's Resume},
+    pdfauthor={Woody Chang},
+    colorlinks=true,
+    urlcolor=primaryColor
+]{hyperref} % for links, metadata and bookmarks
+
+% Ensure that generated PDF is machine readable/ATS parsable:
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage{setspace}
+\setstretch{0.94} % Adjust to desired spacing for compactness
+
+
+% Some settings:
+\raggedright
+\pagestyle{empty} % no header or footer
+\setcounter{secnumdepth}{0} % no section numbering
+\setlength{\parindent}{0pt} % no indentation
+
+\titleformat{\section}{\large\bfseries}{}{0pt}{}[\vspace{1pt}\titlerule]
+\titlespacing{\section}{0pt}{0.2cm}{0.15cm} % reduced section title spacing
+
+\renewcommand\labelitemi{$\vcenter{\hbox{\small$\bullet$}}$} % custom bullet points
+
+\begin{document}
+
+% No indentation for the header
+\noindent
+\begin{minipage}[c]{0.35\textwidth} % Left side (Name)
+    {\LARGE \textbf{DER-CHIEN CHANG}}
+\end{minipage}%
+\hfill % Pushes the right side to the edge
+\begin{minipage}[c]{0.6\textwidth} % Right side (Contact Info)
+    \raggedleft % Align text to the right
+    % Line 1: Location and Phone
+    Toronto, ON \ | \ 236-865-1360 \\ 
+    % Line 2: Email (on its own line to save width)
+    \href{mailto:woodychang891121@gmail.com}{woody.chang21@gmail.com} \\ 
+    % Line 3: Links
+    \href{https://linkedin.com/in/woody-chang}{LinkedIn} \ | \ 
+    \href{https://github.com/WoodyChang21}{GitHub} \ | \ 
+    \href{https://woodychang21.github.io/Personal-Blog/}{AI Blog}
+\end{minipage}
+
+
+%----------------------------------------------------------------------------------------
+%	Education
+%----------------------------------------------------------------------------------------
+\section*{Education}
+\noindent\textbf{University of Toronto} \hfill \text{2026}\\
+Master of Computer Engineering – Data Analysis \& Machine Learning\\
+\textbf{University of British Columbia} \hfill \text{2024}\\
+Bachelor of Applied Science – Electrical Engineering
+
+%----------------------------------------------------------------------------------------
+%	WORK EXPERIENCE
+%----------------------------------------------------------------------------------------
+
+\section*{Work Experience}
+
+\begin{tabularx}{\linewidth}{@{}l X r@{}}
+    \textbf{AI Intern}, \textbf{Ret[AI]ling Data} & & \textsc{June 2025 -- Dec 2025} \\
+\end{tabularx}
+\begin{itemize}[leftmargin=2em, itemsep=0pt]
+    \item Migrated a tightly coupled, hand-engineered RAG pipeline to a modular LangGraph agent architecture, introducing conversational agent based architecture and standardized database vector search, enabling rapid chatbot deployment via data configuration and domain specific system prompt
+    \item Built a minimum viable product (MVP) multi-agent AI system capable of generating interacting graph from the database based on user's natural language input. 
+    \item Designed a high-precision RAG pipeline using MongoDB Atlas Vector Search + OpenAI embeddings with hybrid retrieval and adaptive re-ranking, achieving 90–93\% retrieval precision on 2,000+ QA pairs and tracking quality with RAGAS metrics.
+    \item Implemented a scalable, containerized FastAPI backend for a production chatbot, using Redis for session-based conversation state and MongoDB for per-user data persistence, supporting 1,000+ daily users with end-to-end latency less than 300 ms.
+    \item Implemented RBAC for a third-party messaging chatbot, combining email verification with role enforcement to prevent unauthorized access and reduce the risk of sensitive data leakage in multi-tenant deployments.
+\end{itemize}
+
+\begin{tabularx}{\linewidth}{@{}l X r@{}}
+    \textbf{Software Intern}, \textbf{Anyload Weigh \& Measure} & & \textsc{Sept 2022 -- Dec 2022} \\
+\end{tabularx}
+\begin{itemize}[leftmargin=2em, itemsep=0pt]
+    \item Built automated Python ETL pipelines and relational database schemas to keep inventory data synchronized across warehouses, improving data reliability for real-time stock tracking and operational reporting.
+\end{itemize}
+
+
+%----------------------------------------------------------------------------------------
+%	Technical Projects
+%----------------------------------------------------------------------------------------
+
+\section*{Technical Projects}
+
+\begin{tabularx}{\linewidth}{@{}l X r@{}}
+    \href{https://github.com/WoodyChang21/LearnDL}{\textbf{LearnDL: NLP Deep Learning Platform}} & & \text{Jan 2026 -- Mar 2026} \\
+\end{tabularx}
+\text{Skills: PyTorch, Hugging Face Transformers, FastAPI, Redis, S3 (boto3), Docker, GitHub Actions}\\
+\begin{itemize}[leftmargin=2em, itemsep=0pt]
+    \item Built an end-to-end NLP pipeline for text classification with configurable preprocessing and fine-tuning of transformer backbones (BERT, DistilBERT, RoBERTa, Longformer), supporting frozen/partial/full unfreeze and modular classifier heads (MLP, BiGRU).
+    \item Engineered a FastAPI service to orchestrate asynchronous training and inference via background jobs, with real-time progress tracking, session-based experiment control, and scalable RESTful model serving.
+    \item Designed a modular ML system with Redis-backed job/state management and S3 checkpointing to support concurrent training workflows; implemented Docker + GitHub Actions CI/CD for versioned deployment to GPU environments.
+\end{itemize}
+
+\begin{tabularx}{\linewidth}{@{}l X r@{}}
+    \href{https://github.com/WoodyChang21/langgraph_data_swarm}{\textbf{Airport Analytics Agent}} & & \text{Aug 2025 -- Dec 2025} \\
+\end{tabularx}
+\text{Skills: LangGraph, LangChain, FastAPI,  Redis, AWS S3, Docker}\\
+\begin{itemize}[leftmargin=2em, itemsep=0pt]
+    \item Architected a production-ready multi-agent analytics system using LangGraph’s supervisor pattern, coordinating three specialized agents (SQL search, visualization, analysis) to process conversational queries over 30,000+ airport records.
+    \item Built a visualization pipeline, converting natural-language queries into executable SQL, exporting results to AWS S3 bucket, and dynamically generating interactive Plotly charts with intelligent chart-type selection.
+    \item Deployed a conversational chatbot with Redis persistence, Docker containerization, FastAPI supported backend, and a real-time anomaly detection module that triggered automated alerts for abnormal flight patterns.
+\end{itemize}
+
+\begin{tabularx}{\linewidth}{@{}l X r@{}}
+    \href{https://github.com/WoodyChang21/MCP}{\textbf{MCP: Natural Language to Data Visualization Agent}} & & \text{Jul 2025 - Aug 2025} \\
+\end{tabularx}
+\text{Skills: Model Context Protocol (MCP), LangChain, LangGraph, Docker, SQLite, MCP}\\
+\begin{itemize}[leftmargin=2em, itemsep=0pt]
+    \item Built an end-to-end MCP learning and demo project that progresses from core Model Context Protocol (MCP) primitives to a production-style LangChain + LangGraph agent application, designed to help developers adopt MCP in real systems.
+    \item Integrated a third-party MCP server (Tako) into a production-style ReAct agent workflow, enabling real-time search and dataset visualization via streamable HTTP, with SQLite checkpointing for persistent multi-turn conversations.
+    \item Implemented a Streamlit interface that streams agent execution step-by-step (tool calls and intermediate outputs), improving debuggability and user trust in the system’s results.
+\end{itemize}
+
+%----------------------------------------------------------------------------------------
+%	Technical Skills
+%----------------------------------------------------------------------------------------
+\section*{Technical Skills}
+\begin{itemize}[leftmargin=*, itemsep=0pt]
+    \item \textbf{AI Agent \& LLMs: } LangGraph, Semantic Kernel, RAG, LangChain, Prompt Engineering, OpenAI APIs
+    \item \textbf{MLOps \& Backend:} FastAPI, Docker, Redis, AWS , ETL Processes, Git/GitHub
+    \item \textbf{Machine Learning \& Data:} PyTorch, Scikit-learn, Vector Search (FAISS), SQL, MongoDB
+\end{itemize}
+
+\end{document}

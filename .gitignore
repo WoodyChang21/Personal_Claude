@@ -24,11 +24,11 @@ __pycache__/
 *.stackdump
 
 # Personal resume (keep local only — not for public repos)
-**/resume/*.pdf
-**/resume/*.aux
-**/resume/*.log
-**/resume/*.out
-**/resume/*.synctex.gz
+**/resume/base/*.pdf
+**/resume/base/*.aux
+**/resume/base/*.log
+**/resume/base/*.out
+**/resume/base/*.synctex.gz
 
 # Tailored resume outputs (local only — generated per job application)
 **/resume/tailored/
