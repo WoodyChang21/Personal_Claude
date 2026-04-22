@@ -212,7 +212,19 @@ Sleep 0.5s between leads to respect Notion rate limits.
 
 ---
 
-### Step 6 — Print Summary
+### Step 6 — Sync Applied Leads
+
+After writing all new leads to Notion, run:
+```bash
+cd ".claude/skills/job-hunt"
+python scripts/notion_client.py sync-applied
+```
+
+Print any synced entries. If nothing to sync, note that too.
+
+---
+
+### Step 7 — Print Summary
 
 ```
 Job Hunt Run — YYYY-MM-DD
@@ -227,6 +239,7 @@ Top leads:
 ...
 
 Skipped (already tracked): ML Engineer @ Atlassian, AI Engineer @ Google, ...
+Synced to Applied Jobs: ML Engineer @ Handshake (or "Nothing to sync")
 ```
 
 ---

@@ -15,7 +15,6 @@ NOTION_VERSION = "2022-06-28"
 _LOCATION_MAP = [
     ("toronto", "Toronto"),
     ("vancouver", "Vancouver"),
-    ("remote", "Remote"),
     ("taipei", "Taipei"),
     ("san jose", "San Jose"),
     ("seattle", "Seattle"),
@@ -42,12 +41,14 @@ def _map_location(location_text: str) -> list[dict]:
     loc = location_text.lower()
     matched = []
     seen = set()
+    # Check "remote only" — exclude "remote eligible / remote-friendly / remote ok"
+    if "remote" in loc and not any(x in loc for x in ("remote eligible", "remote-eligible", "remote friendly", "remote ok")):
+        matched.append({"name": "Remote"})
+        seen.add("Remote")
     for fragment, option_name in _LOCATION_MAP:
         if fragment in loc and option_name not in seen:
             matched.append({"name": option_name})
             seen.add(option_name)
-    if not matched:
-        matched.append({"name": "Remote"})
     return matched
 
 
@@ -183,7 +184,7 @@ def sync_applied_to_applied_jobs(token: str, job_leads_db: str, applied_jobs_db:
             "Application Status": {"status": {"name": "Waiting"}},
             "Position/Title": {"select": {"name": "FullTime"}},
             "Location": {"multi_select": _map_location(location)},
-            "Job Description": {"rich_text": [{"text": {"content": f"{role} @ {company} — Score: {score}/10\n{url}"}}]},
+            "Job Description": {"rich_text": [{"text": {"content": role}}]},
         }
         _notion_request("POST", "/pages", token, {
             "parent": {"database_id": applied_jobs_db},
