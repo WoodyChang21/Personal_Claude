@@ -184,6 +184,7 @@ def sync_applied_to_applied_jobs(token: str, job_leads_db: str, applied_jobs_db:
             "Application Status": {"status": {"name": "Waiting"}},
             "Position/Title": {"select": {"name": "FullTime"}},
             "Location": {"multi_select": _map_location(location)},
+            "Resume Type": {"select": {"name": "Claude Tailored Resume"}},
             "Job Description": {"rich_text": [{"text": {"content": role}}]},
         }
         _notion_request("POST", "/pages", token, {
