@@ -6,7 +6,7 @@ Search for Machine Learning Engineer and AI Engineer new grad / entry-level role
 
 Use this skill when the user asks to: run a job search, find ML/AI roles, populate the job leads database, or "run the job hunt pipeline".
 
-This skill also runs as a scheduled remote CCR agent every weekday at 9am America/Toronto.
+Run this skill locally with `/job-hunt`. CCR scheduling is not used — Notion writes require local MCP access.
 
 ## Prerequisites
 

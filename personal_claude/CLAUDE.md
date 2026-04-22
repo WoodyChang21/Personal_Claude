@@ -98,11 +98,7 @@ GMAIL_APP_PASSWORD=<16-char Google app password — local SMTP fallback only>
 - Job Leads DB ID: `3499719ac5f4800da543c5b965c4003b`
 - Applied Jobs DB ID: `78350949d774433298f637436df32623`
 
-**Scheduled trigger:**
-- ID: `trig_018xYKKKeWbpb873e9gxcupV`
-- Cron: `0 13 * * 1-5` (9am America/Toronto = 1pm UTC, Mon–Fri)
-- Managed at: https://claude.ai/code/scheduled/trig_018xYKKKeWbpb873e9gxcupV
-- Clones this GitHub repo, creates `.env` from embedded credentials, writes to Notion via MCP
+**How to run:** Trigger locally with `/job-hunt`. CCR scheduled trigger is disabled — `api.notion.com` is blocked in Anthropic's CCR egress allowlist, so Notion writes only work locally.
 
 ### skill-creator
 
