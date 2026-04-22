@@ -89,39 +89,47 @@ Keep top 10 leads with score ≥ 5. If fewer than 5 qualify, keep all that score
 
 ---
 
-### Step 4 — Tailor Resume Per Lead
+### Step 4 — Tailor Resume Per Lead + Generate PDF
 
 For each kept lead, `WebFetch` the job URL to get the full job description.
 
-Generate tailored resume as structured data:
-
-```json
-{
-  "rationale": "2–3 sentences in third person explaining why this candidate is a strong match, referencing specific JD requirements",
-  "skills": ["skill1 — why it matches", "skill2 — why it matches"],
-  "experience": [
-    {
-      "company": "...",
-      "role": "...",
-      "dates": "...",
-      "bullets": ["rewritten bullet mirroring JD language", "..."]
-    }
-  ],
-  "projects": [
-    {"name": "...", "description": "1–2 sentences, quantified, mirroring JD keywords"}
-  ],
-  "education": "Degree, Institution, Year. Relevant coursework: ..."
-}
-```
+**4a. Plan the tailoring** — decide which parts of the resume to change:
 
 Rules:
 - Mirror JD keywords exactly where the resume already demonstrates the skill
 - Never fabricate experience, credentials, or skills
 - Quantify wherever possible
-- Order skills and experience by relevance to this specific JD
-- Include 8–12 skills, 1–3 experience entries, 1–2 projects
+- Reorder `Technical Skills` categories/items so the most JD-relevant ones appear first
+- Rewrite up to 3 work experience bullets per role to mirror JD language
+- Reorder projects so the 1–2 most relevant appear first; rewrite their bullets to mirror JD keywords
+- Keep education unchanged
 
-If WebFetch fails for a URL, note "Resume tailoring skipped — could not fetch JD" and continue.
+**4b. Generate a tailored `.tex` file** — copy `Resume.tex` and apply the changes above.
+
+Output directory: `.claude/skills/job-hunt/resume/tailored/YYYY-MM-DD/`  
+File name: `{Company}_{Role}.tex` (spaces → underscores, lowercase)
+
+LaTeX escaping rules (apply whenever inserting any text into `.tex`):
+- `&` → `\&`
+- `%` → `\%`
+- `#` → `\#`
+- `_` → `\_`
+- `$` → `\$`
+- `{` / `}` → `\{` / `\}`
+- `~` → `\textasciitilde{}`
+- `^` → `\textasciicircum{}`
+- `\` → `\textbackslash{}`
+- Smart quotes / em-dashes from JD copy: replace with `''`, `--`, `---` as appropriate
+
+**4c. Compile to PDF** using Bash:
+```bash
+cd ".claude/skills/job-hunt/resume/tailored/YYYY-MM-DD"
+pdflatex -interaction=nonstopmode "{Company}_{Role}.tex"
+```
+
+Run twice if needed (for cross-references). Check output says `(1 page,` — if 2 pages, reduce `\vspace` amounts in the file and recompile.
+
+If WebFetch fails for a URL, note "Resume tailoring skipped — could not fetch JD" and skip 4b/4c for that lead.
 
 ---
 
@@ -145,16 +153,11 @@ For each lead, do the following in order:
   - Date Found: `{today's date, YYYY-MM-DD}`
   - Match Score: `{score}`
   - Source: `{source, e.g. Greenhouse / LinkedIn}`
+  - Resume PDF: local path `.claude/skills/job-hunt/resume/tailored/YYYY-MM-DD/{Company}_{Role}.pdf` (as a text property or page body note)
 
-**5b. Create a child "Tailored Resume" page** using `notion-create-pages`:
-- Parent: the page created in 5a
-- Title: `"Tailored Resume — {Role} @ {Company}"`
-- Content (as blocks or description):
-  1. Heading: match rationale paragraph
-  2. Section "Relevant Skills": bulleted list of matched skills
-  3. Section "Work Experience": role/company/dates + tailored bullets
-  4. Section "Projects": 1–2 most relevant with quantified descriptions
-  5. Section "Education": degree, institution, year, relevant coursework
+**5b. Add a brief tailoring note** as page body content (plain paragraph, no child page needed):
+- 2–3 sentences explaining why this candidate is a strong match, referencing specific JD requirements
+- List the 3 most impactful resume changes made for this JD
 
 Wait briefly between each lead to respect Notion rate limits.
 
@@ -165,11 +168,13 @@ Wait briefly between each lead to respect Notion rate limits.
 ```
 Job Hunt Run — YYYY-MM-DD
 Filters: ML/AI Engineer | New Grad/Entry Level | Canada + USA | Posted ≤ 3 days
-Raw leads found: N | Qualified (score ≥ 5): N | Written to Notion: N
+Raw leads found: N | Qualified (score ≥ 5): N | Written to Notion: N | PDFs saved: N
 
 Top leads:
 1. ML Engineer @ Cohere — Toronto, ON — Score 8 — https://...
+   PDF: .claude/skills/job-hunt/resume/tailored/YYYY-MM-DD/Cohere_ML_Engineer.pdf
 2. AI Engineer @ Waabi — Remote, Canada — Score 7 — https://...
+   PDF: .claude/skills/job-hunt/resume/tailored/YYYY-MM-DD/Waabi_AI_Engineer.pdf
 ...
 ```
 
@@ -178,5 +183,7 @@ Top leads:
 ## Error Handling
 
 - If a Notion write fails, log the error and continue with remaining leads.
+- If a PDF compilation fails, log the error and continue — do not skip the Notion write for that lead.
 - If fewer than 3 leads are found after filtering, print: `WARNING: Only N leads found. Filters: ML/AI Engineer title + New Grad/Entry Level + Canada/USA + posted ≤ 3 days. Consider running again tomorrow.`
-- Never fall back to git or local file writes as a substitute for Notion writes.
+- Never fall back to git as a substitute for Notion writes.
+- Compiled PDFs and `.tex` source files in `tailored/` are local only — never commit them.

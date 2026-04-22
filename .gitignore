@@ -25,3 +25,10 @@ __pycache__/
 
 # Personal resume (keep local only — not for public repos)
 **/resume/*.pdf
+**/resume/*.aux
+**/resume/*.log
+**/resume/*.out
+**/resume/*.synctex.gz
+
+# Tailored resume outputs (local only — generated per job application)
+**/resume/tailored/
