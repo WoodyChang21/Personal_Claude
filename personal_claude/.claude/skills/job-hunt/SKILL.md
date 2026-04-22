@@ -70,12 +70,15 @@ Collect raw results. Deduplicate by URL. **Discard postings older than 3 days.**
 
 Before scoring, check both Notion databases to avoid re-processing roles already tracked.
 
-For each raw lead, use `notion-search` to search for `"{Role} @ {Company}"` (the same title format used when writing leads).
+For each raw lead, run:
+```bash
+cd ".claude/skills/job-hunt"
+python scripts/notion_client.py check-duplicate --title "{Role} @ {Company}"
+```
 
-- Search the **Job Leads** database (`3499719ac5f4800da543c5b965c4003b`)
-- Search the **Applied Jobs** database (`78350949d774433298f637436df32623`)
+The script searches both the Job Leads DB and Applied Jobs DB. Output is `duplicate` or `new`.
 
-**If a match is found in either database** (regardless of its current status — New, Applied, Rejected, etc.), discard that lead and note: `SKIP (already tracked): {Role} @ {Company}`.
+**If output is `duplicate`**, discard that lead and note: `SKIP (already tracked): {Role} @ {Company}`.
 
 Continue with only the leads that are not already in either database.
 
@@ -158,33 +161,54 @@ If WebFetch fails for a URL, note "Resume tailoring skipped — could not fetch 
 
 ---
 
-### Step 5 — Write to Notion via MCP (sequential)
+### Step 5 — Write to Notion via Python script (sequential)
 
-Use the **Notion MCP tools** to write each lead. Do NOT use `notion_client.py` or make direct API calls.
+Use `scripts/notion_client.py` with the Notion REST API. Credentials are read automatically from `.env`.
 
 Job Leads database ID: `3499719ac5f4800da543c5b965c4003b`
 
 For each lead, do the following in order:
 
-**5a. Create the job lead page** using `notion-create-pages`:
-- Parent: database `3499719ac5f4800da543c5b965c4003b`
-- Properties to set:
-  - Name (title): `"{Role} @ {Company}"`
-  - Company: `{company}`
-  - Role: `{role}`
-  - Location: `{location}`
-  - Job URL: `{url}`
-  - Status: `New`
-  - Date Found: `{today's date, YYYY-MM-DD}`
-  - Match Score: `{score}`
-  - Source: `{source, e.g. Greenhouse / LinkedIn}`
-  - Resume PDF: local path `.claude/skills/job-hunt/resume/tailored/YYYY-MM-DD/{Company}_{Role}.pdf`
+**5a. Create a job JSON file** at `/tmp/{company}_{role}_lead.json`:
+```json
+{
+  "role": "{role}",
+  "company": "{company}",
+  "location": "{location}",
+  "url": "{url}",
+  "date_found": "YYYY-MM-DD",
+  "score": {score},
+  "source": "{source, e.g. Greenhouse / LinkedIn}"
+}
+```
 
-**5b. Add a brief tailoring note** as page body content (plain paragraph, no child page needed):
-- 2–3 sentences explaining why this candidate is a strong match, referencing specific JD requirements
-- List the 3 most impactful resume changes made for this JD
+**5b. Create the job lead page:**
+```bash
+cd ".claude/skills/job-hunt"
+python scripts/notion_client.py create-page --job-json /tmp/{company}_{role}_lead.json
+```
+Save the returned page ID.
 
-Wait briefly between each lead to respect Notion rate limits.
+**5c. Create a note JSON file** at `/tmp/{company}_{role}_note.json`:
+```json
+{
+  "note": "2–3 sentences: why this candidate is a strong match, referencing specific JD requirements.",
+  "changes": [
+    "Change 1: what was rewritten and why it mirrors the JD",
+    "Change 2: ...",
+    "Change 3: ..."
+  ]
+}
+```
+
+**5d. Append the tailoring note:**
+```bash
+python scripts/notion_client.py add-body-note \
+  --page-id "{page_id from 5b}" \
+  --note-json /tmp/{company}_{role}_note.json
+```
+
+Sleep 0.5s between leads to respect Notion rate limits.
 
 ---
 
@@ -209,9 +233,9 @@ Skipped (already tracked): ML Engineer @ Atlassian, AI Engineer @ Google, ...
 
 ## Error Handling
 
-- If a Notion write fails, log the error and continue with remaining leads.
+- If a Notion write fails (non-zero exit or HTTP error), log the error and continue with remaining leads.
 - If a PDF compilation fails, log the error and continue — do not skip the Notion write for that lead.
-- If Notion search (duplicate check) fails, log a warning and continue without skipping — better to write a duplicate than miss a new lead.
+- If `check-duplicate` fails, log a warning and treat the lead as `new` — better to write a duplicate than miss a fresh lead.
 - If fewer than 3 leads are found after filtering, print: `WARNING: Only N leads found. Filters: ML/AI Engineer title + New Grad/Entry Level + Canada/USA + posted ≤ 3 days. Consider running again tomorrow.`
-- Never fall back to git as a substitute for Notion writes.
+- Never use the Notion MCP tools — always use `scripts/notion_client.py` directly via Bash.
 - Compiled PDFs and `.tex` source files in `tailored/` are local only — never commit them.

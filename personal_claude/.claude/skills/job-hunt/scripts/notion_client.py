@@ -154,6 +154,61 @@ def build_resume_blocks(rationale: str, skills: list[str], experience: list[dict
     return blocks
 
 
+def check_duplicate(token: str, job_leads_db: str, applied_jobs_db: str, title: str) -> bool:
+    """Return True if title already exists in either database."""
+    payload = {"query": title, "filter": {"value": "page", "property": "object"}}
+    result = _notion_request("POST", "/search", token, payload)
+    for page in result.get("results", []):
+        parent = page.get("parent", {})
+        parent_id = parent.get("database_id", "").replace("-", "")
+        if parent_id in (job_leads_db.replace("-", ""), applied_jobs_db.replace("-", "")):
+            page_title = ""
+            props = page.get("properties", {})
+            for prop in props.values():
+                if prop.get("type") == "title":
+                    parts = prop.get("title", [])
+                    if parts:
+                        page_title = parts[0].get("plain_text", "")
+                    break
+            if page_title.lower() == title.lower():
+                return True
+    return False
+
+
+def append_body_note(token: str, page_id: str, note: str, changes: list[str]) -> None:
+    """Append a tailoring rationale note directly to an existing page."""
+    blocks = [
+        {"object": "block", "type": "paragraph", "paragraph": {
+            "rich_text": [{"type": "text", "text": {"content": note}}]
+        }},
+        {"object": "block", "type": "heading_3", "heading_3": {
+            "rich_text": [{"type": "text", "text": {"content": "Key Resume Changes"}}]
+        }},
+    ]
+    for change in changes:
+        blocks.append({"object": "block", "type": "bulleted_list_item", "bulleted_list_item": {
+            "rich_text": [{"type": "text", "text": {"content": change}}]
+        }})
+    _notion_request("PATCH", f"/blocks/{page_id}/children", token, {"children": blocks})
+
+
+def cmd_check_duplicate(args):
+    env = load_env(Path.cwd())
+    token = args.token or env.get("NOTION_TOKEN", "")
+    job_leads_db = args.job_leads_db or env.get("JOB_LEADS_DB_ID", "")
+    applied_db = args.applied_db or env.get("APPLIED_JOBS_DB_ID", "")
+    found = check_duplicate(token, job_leads_db, applied_db, args.title)
+    print("duplicate" if found else "new")
+
+
+def cmd_add_body_note(args):
+    env = load_env(Path.cwd())
+    token = args.token or env.get("NOTION_TOKEN", "")
+    data = json.loads(Path(args.note_json).read_text(encoding="utf-8"))
+    append_body_note(token, args.page_id, data["note"], data.get("changes", []))
+    print("ok")
+
+
 def cmd_create_page(args):
     env = load_env(Path.cwd())
     token = args.token or env.get("NOTION_TOKEN", "")
@@ -185,8 +240,23 @@ if __name__ == "__main__":
     p_resume.add_argument("--page-id", required=True)
     p_resume.add_argument("--blocks-json", required=True)
 
+    p_dup = sub.add_parser("check-duplicate")
+    p_dup.add_argument("--token", default="")
+    p_dup.add_argument("--job-leads-db", default="")
+    p_dup.add_argument("--applied-db", default="")
+    p_dup.add_argument("--title", required=True)
+
+    p_note = sub.add_parser("add-body-note")
+    p_note.add_argument("--token", default="")
+    p_note.add_argument("--page-id", required=True)
+    p_note.add_argument("--note-json", required=True)
+
     args = parser.parse_args()
     if args.command == "create-page":
         cmd_create_page(args)
     elif args.command == "append-resume":
         cmd_append_resume(args)
+    elif args.command == "check-duplicate":
+        cmd_check_duplicate(args)
+    elif args.command == "add-body-note":
+        cmd_add_body_note(args)
